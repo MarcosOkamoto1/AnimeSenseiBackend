@@ -1,33 +1,92 @@
 import OpenAI from "openai";
 
 const openai = new OpenAI({
-  apiKey: process.env.OPEAN_AI_KEY,
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
-export async function interpretAnimePrompt(prompt: string) {
+export interface AnimePreferences {
+  genres: string[];
+  excludedGenres: string[];
+  mood: string[];
+  maxEpisodes: number | null;
+  searchTerms: string[];
+}
+
+export async function interpretAnimePrompt(
+  prompt: string,
+): Promise<AnimePreferences> {
   const response = await openai.responses.create({
     model: "gpt-5-mini",
+
     instructions: `
-        You are an anime search-query interpreter for an application called AnimeSensei.
+You are an anime search-query interpreter for AnimeSensei.
 
-        Your job is to analyze the user's natural-language request and convert it into precise, practical search preferences that can later be used to query the AniList API.
+Extract precise preferences that can later be used to search the AniList API.
 
-        Rules:
-            - Do not recommend or invent anime titles.
-            - Do not answer conversationally.
-            - Do not explain your reasoning.
-            - Extract only preferences that are explicitly stated or strongly implied by the user.
-            - Preserve the user's intent even when the request is vague, informal, emotional, or written in another language.
-            - Translate concepts into concise English search terms.
-            - Prefer official AniList genre names whenever possible, such as Action, Adventure, Comedy, Drama, Ecchi, Fantasy, Horror, Mahou Shoujo, Mecha, Music, Mystery, Psychological, Romance, Sci-Fi, Slice of Life, Sports, Supernatural, and Thriller.
-            - Distinguish desired genres from genres the user wants to avoid.
-            - Interpret words such as "short", "long", "few episodes", or "many episodes" as episode-count preferences.
-            - Interpret emotional descriptions such as relaxing, sad, dark, wholesome, intense, funny, romantic, philosophical, or suspenseful as mood preferences.
-            - Do not add restrictions that the user did not request.
-            - When information is missing, leave it unspecified instead of guessing.
-            - Keep the result concise and optimized for a later AniList search.
-    `,
+Rules:
+- Do not recommend anime titles.
+- Do not explain your reasoning.
+- Preserve the user's intent.
+- Translate extracted values into English.
+- Prefer official AniList genre names.
+- Do not invent preferences.
+- Use empty arrays when information is missing.
+- Use null when no maximum episode count is specified.
+- Interpret "short", "curto", "few episodes", or equivalent expressions as maxEpisodes: 13.
+- Interpret "medium length" or equivalent expressions as maxEpisodes: 26.
+- Only use episode limits explicitly stated or clearly implied by the user.
+`,
+
     input: prompt,
+
+    text: {
+      format: {
+        type: "json_schema",
+        name: "anime_preferences",
+        strict: true,
+        schema: {
+          type: "object",
+          properties: {
+            genres: {
+              type: "array",
+              items: {
+                type: "string",
+              },
+            },
+            excludedGenres: {
+              type: "array",
+              items: {
+                type: "string",
+              },
+            },
+            mood: {
+              type: "array",
+              items: {
+                type: "string",
+              },
+            },
+            maxEpisodes: {
+              type: ["integer", "null"],
+            },
+            searchTerms: {
+              type: "array",
+              items: {
+                type: "string",
+              },
+            },
+          },
+          required: [
+            "genres",
+            "excludedGenres",
+            "mood",
+            "maxEpisodes",
+            "searchTerms",
+          ],
+          additionalProperties: false,
+        },
+      },
+    },
   });
-  return response.output_text;
+
+  return JSON.parse(response.output_text) as AnimePreferences;
 }

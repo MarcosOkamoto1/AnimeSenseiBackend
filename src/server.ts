@@ -17,9 +17,12 @@ app.post("/recommendations", async (request, response) => {
   const prompt = request.body.prompt;
 
   try {
+    const interpretation = await interpretAnimePrompt(prompt);
+
     response.status(200).json({
-      message: "Recommendation Recevied",
+      message: "Recommendation received",
       prompt: prompt,
+      interpretation: interpretation,
     });
   } catch (error) {
     console.log(error);
