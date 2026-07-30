@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import { interpretAnimePrompt } from "./services/OpenAIService.js";
+import { searchAnimes } from "./services/AniListService.js";
 
 const app = express();
 const port = 3000;
@@ -17,18 +18,18 @@ app.post("/recommendations", async (request, response) => {
   const prompt = request.body.prompt;
 
   try {
-    const interpretation = await interpretAnimePrompt(prompt);
+    const preferences = await interpretAnimePrompt(prompt);
+    const animes = await searchAnimes(preferences);
 
     response.status(200).json({
-      message: "Recommendation received",
-      prompt: prompt,
-      interpretation: interpretation,
+      preferences,
+      animes,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
 
     response.status(500).json({
-      message: "Erro ao interpretar o prompt.",
+      message: "Erro ao gerar recomendações.",
     });
   }
 });
