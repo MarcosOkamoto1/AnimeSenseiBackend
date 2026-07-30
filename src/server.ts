@@ -11,6 +11,15 @@ app.get("/health", (_request, response) => {
   });
 });
 
+app.post("/recommendations", (request, response) => {
+  const prompt = request.body.prompt;
+
+  response.status(200).json({
+    message: "Recommendation Recevied",
+    prompt: prompt,
+  });
+});
+
 app.listen(port, () => {
   console.log(`Server rodando em localhost porta ${port}`);
 });
