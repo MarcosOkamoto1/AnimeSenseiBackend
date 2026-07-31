@@ -39,10 +39,11 @@ export async function rankAnimeCandidates(
     };
   }
 
-  const candidates = animes.slice(0, 7).map((anime) => ({
+  const candidates = animes.slice(0, 10).map((anime) => ({
     id: anime.id,
     title: anime.title,
-    description: removeHtml(anime.description)?.slice(0, 180) ?? null,
+    description: removeHtml(anime.description)?.slice(0, 300) ?? null,
+    episodes: anime.episodes,
     genres: anime.genres,
     averageScore: anime.averageScore,
   }));

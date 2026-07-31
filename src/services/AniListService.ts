@@ -19,7 +19,7 @@ interface AniListAnime {
   };
 
   description: string | null;
-  episode: number | null;
+  episodes: number | null;
   genres: string[];
   averageScore: number | null;
 
@@ -132,7 +132,7 @@ export async function searchAnimes(
     id: anime.id,
     title: anime.title.romaji,
     description: anime.description,
-    episodes: anime.episode,
+    episodes: anime.episodes,
     genres: anime.genres,
     averageScore: anime.averageScore,
     coverImage: anime.coverImage?.large ?? null,
