@@ -47,6 +47,10 @@ Rules:
 - Do not use outcome-based concepts such as "Happy Ending" as AniList tags unless they are confirmed valid.
 - Put subjective or narrative outcome preferences such as happy ending, sad ending, satisfying ending, or the couple staying together inside mood or searchTerms instead of tags.
 - If unsure whether a concept is a valid AniList tag, leave tags empty.
+- Never claim an ending detail unless you are reasonably confident.
+- Exclude candidates that clearly contradict the user's request.
+- If the available metadata is insufficient, assign a lower score.
+- Do not invent plot details.
 `,
 
     input: prompt,

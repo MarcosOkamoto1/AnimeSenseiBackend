@@ -45,7 +45,7 @@ export async function searchAnimes(
       $excludedTags: [String]
       $episodesLesser: Int
     ) {
-      Page(page: 1, perPage: 50) {
+      Page(page: 1, perPage: 30) {
         media(
           type: ANIME
           genre_in: $genres
