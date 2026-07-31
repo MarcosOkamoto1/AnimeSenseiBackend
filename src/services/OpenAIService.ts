@@ -7,6 +7,8 @@ const openai = new OpenAI({
 export interface AnimePreferences {
   genres: string[];
   excludedGenres: string[];
+  tags: string[];
+  excludedTags: string[];
   mood: string[];
   maxEpisodes: number | null;
   searchTerms: string[];
@@ -35,6 +37,16 @@ Rules:
 - Interpret "short", "curto", "few episodes", or equivalent expressions as maxEpisodes: 13.
 - Interpret "medium length" or equivalent expressions as maxEpisodes: 26.
 - Only use episode limits explicitly stated or clearly implied by the user.
+- Distinguish AniList genres from AniList tags.
+- Use genres only for broad categories such as Romance, Drama, Fantasy, Supernatural, Action, Comedy, and Slice of Life.
+- Use tags for specific concepts, themes, character types, settings, or tropes.
+- Convert phrases such as "cute girls" into relevant AniList-style tags such as "Cute Girls Doing Cute Things" or "Primarily Female Cast".
+- Do not place specific concepts inside genres.
+- Only include tags that are known AniList tags.
+- Never invent tag names.
+- Do not use outcome-based concepts such as "Happy Ending" as AniList tags unless they are confirmed valid.
+- Put subjective or narrative outcome preferences such as happy ending, sad ending, satisfying ending, or the couple staying together inside mood or searchTerms instead of tags.
+- If unsure whether a concept is a valid AniList tag, leave tags empty.
 `,
 
     input: prompt,
@@ -46,6 +58,7 @@ Rules:
         strict: true,
         schema: {
           type: "object",
+
           properties: {
             genres: {
               type: "array",
@@ -53,21 +66,39 @@ Rules:
                 type: "string",
               },
             },
+
             excludedGenres: {
               type: "array",
               items: {
                 type: "string",
               },
             },
+
+            tags: {
+              type: "array",
+              items: {
+                type: "string",
+              },
+            },
+
+            excludedTags: {
+              type: "array",
+              items: {
+                type: "string",
+              },
+            },
+
             mood: {
               type: "array",
               items: {
                 type: "string",
               },
             },
+
             maxEpisodes: {
               type: ["integer", "null"],
             },
+
             searchTerms: {
               type: "array",
               items: {
@@ -75,13 +106,17 @@ Rules:
               },
             },
           },
+
           required: [
             "genres",
             "excludedGenres",
+            "tags",
+            "excludedTags",
             "mood",
             "maxEpisodes",
             "searchTerms",
           ],
+
           additionalProperties: false,
         },
       },

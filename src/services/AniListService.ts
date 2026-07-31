@@ -38,43 +38,63 @@ export async function searchAnimes(
   preferences: AnimePreferences,
 ): Promise<Anime[]> {
   const query = `
-  query (
-    $genres: [String]
-    $episodesLesser: Int
-  ) {
-    Page(page: 1, perPage: 20) {
-      media(
-        type: ANIME
-        genre_in: $genres
-        episodes_lesser: $episodesLesser
-        sort: [SCORE_DESC, POPULARITY_DESC]
-      ) {
-        id
+    query (
+      $genres: [String]
+      $tags: [String]
+      $excludedGenres: [String]
+      $excludedTags: [String]
+      $episodesLesser: Int
+    ) {
+      Page(page: 1, perPage: 50) {
+        media(
+          type: ANIME
+          genre_in: $genres
+          genre_not_in: $excludedGenres
+          tag_in: $tags
+          tag_not_in: $excludedTags
+          episodes_lesser: $episodesLesser
+          minimumTagRank: 30
+          sort: [SCORE_DESC, POPULARITY_DESC]
+        ) {
+          id
 
-        title {
-          romaji
-        }
+          title {
+            romaji
+          }
 
-        description
-        episodes
-        genres
-        averageScore
+          description
+          episodes
+          genres
+          averageScore
 
-        coverImage {
-          large
-        }
+          coverImage {
+            large
+          }
 
-        relations {
-          edges {
-            relationType
+          relations {
+            edges {
+              relationType
+            }
           }
         }
       }
     }
-  }
-`;
+  `;
+
   const variables = {
     genres: preferences.genres.length > 0 ? preferences.genres : undefined,
+
+    tags: preferences.tags.length > 0 ? preferences.tags : undefined,
+
+    excludedGenres:
+      preferences.excludedGenres.length > 0
+        ? preferences.excludedGenres
+        : undefined,
+
+    excludedTags:
+      preferences.excludedTags.length > 0
+        ? preferences.excludedTags
+        : undefined,
 
     episodesLesser:
       preferences.maxEpisodes !== null
@@ -84,12 +104,10 @@ export async function searchAnimes(
 
   const response = await fetch(ANILIST_URL, {
     method: "POST",
-
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
     },
-
     body: JSON.stringify({
       query,
       variables,
@@ -102,22 +120,21 @@ export async function searchAnimes(
 
   const result = (await response.json()) as AniListResponse;
 
-  return result.data.Page.media
-    .filter((anime) => {
-      const hasPrequel = anime.relations.edges.some(
-        (relation) => relation.relationType === "PREQUEL",
-      );
+  const originalAnimes = result.data.Page.media.filter((anime) => {
+    const hasPrequel = anime.relations.edges.some(
+      (relation) => relation.relationType === "PREQUEL",
+    );
 
-      return !hasPrequel;
-    })
-    .slice(0, 10)
-    .map((anime) => ({
-      id: anime.id,
-      title: anime.title.romaji,
-      description: anime.description,
-      episodes: anime.episode,
-      genres: anime.genres,
-      averageScore: anime.averageScore,
-      coverImage: anime.coverImage?.large ?? null,
-    }));
+    return !hasPrequel;
+  });
+
+  return originalAnimes.slice(0, 10).map((anime) => ({
+    id: anime.id,
+    title: anime.title.romaji,
+    description: anime.description,
+    episodes: anime.episode,
+    genres: anime.genres,
+    averageScore: anime.averageScore,
+    coverImage: anime.coverImage?.large ?? null,
+  }));
 }
