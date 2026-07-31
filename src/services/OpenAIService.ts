@@ -51,6 +51,9 @@ Rules:
 - Exclude candidates that clearly contradict the user's request.
 - If the available metadata is insufficient, assign a lower score.
 - Do not invent plot details.
+- If the user requests a short anime, prioritize candidates whose episode count satisfies maxEpisodes.
+- If episode count is unknown, lower the score instead of assuming the candidate is short.
+- Do not return candidates with a score below 60.
 `,
 
     input: prompt,

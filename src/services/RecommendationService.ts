@@ -134,9 +134,9 @@ Rules:
   const ranking = JSON.parse(response.output_text) as RankedRecommendations;
 
   const candidateIds = new Set(candidates.map((anime) => anime.id));
-
   const validRecommendations = ranking.recommendations
     .filter((recommendation) => candidateIds.has(recommendation.id))
+    .filter((recommendation) => recommendation.score >= 60)
     .sort((first, second) => second.score - first.score)
     .slice(0, 10);
 
